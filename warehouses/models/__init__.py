@@ -1,0 +1,1 @@
+from .warehouses import Warehouse  # noqa
