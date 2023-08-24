@@ -1,7 +1,8 @@
 from enum import Enum
+from utilities.db import Manager
 
 
-class Transfer(Enum):
+class Transfer(Manager):
     """
     - warehouse_id: foreignkey of Warehouse
     - good_id: foreignkey of Good
@@ -9,21 +10,8 @@ class Transfer(Enum):
     - datetime: datetime of put/get goods into/from warehouses
     - count: number of goods
     """
-    warehouse_id = "warehouse_id"
-    good_id = "good_id"
-    count = "count"
-    status = "status"
-    datetime = "datetime"
-
-    @property
-    def field_type(self):
-        if self.name in (
-                self.warehouse_id.name,
-                self.good_id.name,
-                self.count.name
-        ):
-            return "INT"
-        elif self.name == self.status.name:
-            return "BIT"
-        elif self.name == self.datetime.name:
-            return "DATETIME"
+    warehouse_id = "INT"
+    good_id = "INT"
+    count = "INT"
+    status = "BIT"
+    datetime = "DATETIME"

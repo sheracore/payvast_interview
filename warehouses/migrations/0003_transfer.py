@@ -6,13 +6,13 @@ def create_transfer(apps, schema_editor):
     cursor = schema_editor.connection.cursor()
     cursor.execute(f"CREATE TABLE {Transfer.__name__.lower()} ("
                    f"id INT NOT NULL PRIMARY KEY, "
-                   f"{Transfer.warehouse_id.name} {Transfer.warehouse_id.field_type} NOT NULL, "
-                   f"{Transfer.good_id.name} {Transfer.good_id.field_type} NOT NULL,"
-                   f"{Transfer.count.name} {Transfer.count.field_type} NOT NULL,"
-                   f"{Transfer.datetime.name} {Transfer.datetime.field_type} NOT NULL,"
-                   f"{Transfer.status.name} {Transfer.status.field_type} NOT NULL,"
-                   f"FOREIGN KEY ({Transfer.good_id.name}) REFERENCES {Good.__name__.lower()}(id),"
-                   f"FOREIGN KEY ({Transfer.warehouse_id.name}) REFERENCES {Warehouse.__name__.lower()}(id)"
+                   f"{Transfer().field_field_dict()['warehouse_id']} {Transfer.warehouse_id} NOT NULL, "
+                   f"{Transfer().field_field_dict()['good_id']} {Transfer.good_id} NOT NULL,"
+                   f"{Transfer().field_field_dict()['count']} {Transfer.count} NOT NULL,"
+                   f"{Transfer().field_field_dict()['datetime']} {Transfer.datetime} NOT NULL,"
+                   f"{Transfer().field_field_dict()['status']} {Transfer.status} NOT NULL,"
+                   f"FOREIGN KEY ({Transfer().field_field_dict()['good_id']}) REFERENCES {Good.__name__.lower()}(id),"
+                   f"FOREIGN KEY ({Transfer().field_field_dict()['warehouse_id']}) REFERENCES {Warehouse.__name__.lower()}(id)"
                    f")"
                    )
 

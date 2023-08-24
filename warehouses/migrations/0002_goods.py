@@ -6,10 +6,10 @@ def create_good(apps, schema_editor):
     cursor = schema_editor.connection.cursor()
     cursor.execute(f"CREATE TABLE {Good.__name__.lower()} ("
                    f"id INT NOT NULL PRIMARY KEY, "
-                   f"{Good.title.name} {Good.title.field_type} NOT NULL, "
-                   f"{Good.weight.name} {Good.weight.field_type} NOT NULL,"
-                   f"{Good.size.name} {Good.size.field_type} NOT NULL,"
-                   f"{Good.price.name} {Good.price.field_type})"
+                   f"{Good().field_field_dict()['title']} {Good.title} NOT NULL, "
+                   f"{Good().field_field_dict()['weight']} {Good.weight} NOT NULL,"
+                   f"{Good().field_field_dict()['size']} {Good.size} NOT NULL,"
+                   f"{Good().field_field_dict()['price']} {Good.price})"
                    )
 
 
@@ -17,11 +17,11 @@ def create_good_warehouse(apps, schema_editor):
     cursor = schema_editor.connection.cursor()
     cursor.execute(f"CREATE TABLE {Good.__name__.lower()}_{Warehouse.__name__.lower()} ("
                    f"id INT NOT NULL PRIMARY KEY, "
-                   f"{GoodWarehouse.warehouse_id.name} {GoodWarehouse.warehouse_id.field_type} NOT NULL, "
-                   f"{GoodWarehouse.good_id.name} {GoodWarehouse.good_id.field_type} NOT NULL,"
-                   f"{GoodWarehouse.good_count.name} {GoodWarehouse.good_count.field_type} NOT NULL,"
-                   f"FOREIGN KEY ({GoodWarehouse.good_id.name}) REFERENCES {Good.__name__.lower()}(id),"
-                   f"FOREIGN KEY ({GoodWarehouse.warehouse_id.name}) REFERENCES {Warehouse.__name__.lower()}(id)"
+                   f"{GoodWarehouse().field_field_dict()['warehouse_id']} {GoodWarehouse.warehouse_id} NOT NULL, "
+                   f"{GoodWarehouse().field_field_dict()['good_id']} {GoodWarehouse.good_id} NOT NULL,"
+                   f"{GoodWarehouse().field_field_dict()['good_count']} {GoodWarehouse.good_count} NOT NULL,"
+                   f"FOREIGN KEY ({GoodWarehouse().field_field_dict()['good_id']}) REFERENCES {Good.__name__.lower()}(id),"
+                   f"FOREIGN KEY ({GoodWarehouse().field_field_dict()['warehouse_id']}) REFERENCES {Warehouse.__name__.lower()}(id)"
                    f")"
                    )
 
