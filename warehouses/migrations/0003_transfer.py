@@ -5,7 +5,7 @@ from ..models import Good, Warehouse, Transfer
 def create_transfer(apps, schema_editor):
     cursor = schema_editor.connection.cursor()
     cursor.execute(f"CREATE TABLE {Transfer.__name__.lower()} ("
-                   f"id INT NOT NULL PRIMARY KEY, "
+                   f"id INT NOT NULL PRIMARY KEY IDENTITY(1,1),"
                    f"{Transfer().field_field_dict()['warehouse_id']} {Transfer.warehouse_id} NOT NULL, "
                    f"{Transfer().field_field_dict()['good_id']} {Transfer.good_id} NOT NULL,"
                    f"{Transfer().field_field_dict()['count']} {Transfer.count} NOT NULL,"
