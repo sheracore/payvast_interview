@@ -1,19 +1,6 @@
-# TODO later to create ORM
 from django.db import connection
-from typing import Optional
+from typing import Optional, List
 from django.core.exceptions import ValidationError
-# cursor = connections['specific_db'].cursor()
-# cursor.execute("select * from item")
-
-
-# TODO: show data in dictionary type
-# sql_query = "SELECT * FROM your_table_name"
-# cursor.execute(sql_query)
-# columns = [col[0] for col in cursor.description]
-# data = cursor.fetchall()
-# data_as_dicts = [dict(zip(columns, row)) for row in data]
-
-from enum import Enum
 
 
 class Manager:
@@ -29,6 +16,11 @@ class Manager:
         return {attr: attr for attr, value in vars(type(self)).items() if
                 not attr.startswith('__') and isinstance(value, str)}
 
+    def original_columns(self):
+        result = ['id']
+        result.extend(list(self.field_field_dict().keys()))
+        return result
+
     def insert(self, **kwargs):
         # TODO: The problem was that cursor.execute(query, values) does not work
         if not kwargs:
@@ -41,7 +33,7 @@ class Manager:
                     cursor.execute(f"insert into {self.model_name}({', '.join(columns)}) VALUES {tuple(values)}")
                 else:
                     v = values[0]
-                    value = f"('{v}')" if isinstance(v, str) else f"({v})"
+                    value = self._query_value_cotation(v)
                     cursor.execute(f"insert into {self.model_name}({', '.join(columns)}) VALUES {value}")
                 connection.commit()
         except Exception as e:
@@ -54,16 +46,26 @@ class Manager:
     def filter(self, **kwargs):
         try:
             with connection.cursor() as cursor:
-                cursor.execute()
-                # columns = list(kwargs.keys())
-                # values = list(kwargs.values())
-                # if len(values) > 1:
-                #     cursor.execute(f"insert into {self.model_name}({', '.join(columns)}) VALUES {tuple(values)}")
-                # else:
-                #     v = values[0]
-                #     value = f"('{v}')" if isinstance(v, str) else f"({v})"
-                #     cursor.execute(f"insert into {self.model_name}({', '.join(columns)}) VALUES {value}")
-                connection.commit()
+                query = "select * from {model_name}"
+                if kwargs:
+                    conditions = ""
+                    for f, v in kwargs.items():
+                        condition_operator = '='
+                        s_f = f.split('__')
+                        field = s_f[0]
+                        if len(s_f) > 1:
+                            condition_operator = self._filter_operators()[s_f[1]]
+                        value = self._query_value_cotation(v)
+                        conditions += f" {field} {condition_operator} {value} and"
+                    if conditions.endswith("and"):
+                        conditions = conditions[:-len("and")]
+                    query += f" where{conditions}"
+                query = query.format(model_name=self.model_name)
+
+                cursor.execute(query)
+                original_columns = self.original_columns()
+                data = cursor.fetchall()
+                return self._make_dict(original_columns, data)
         except Exception as e:
             raise ValidationError(e)
 
@@ -72,10 +74,17 @@ class Manager:
             "gt": ">",
             "gte": ">=",
             "lt": "<",
-            "ltq": "<=",
-            "in": "in",
+            "lte": "<=",
+            # "in": "in",
         }
+
+    def _make_dict(self, original_columns: list, data: List[tuple]):
+        return [dict(zip(original_columns, row)) for row in data]
+
+    def _query_value_cotation(self, value):
+        return f"'{value}'" if isinstance(value, str) else f"{value}"
 
     def exclude(self):
         # TODO: implement is if you need
         pass
+
