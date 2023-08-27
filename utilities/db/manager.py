@@ -56,10 +56,9 @@ class Manager:
                         field = s_f[0]
                         if len(s_f) > 1:
                             condition_operator = self._filter_operators()[s_f[1]]
-                        value = f"'{v}'" if isinstance(v, str) else f"{v}"
+                        value = self._quotation_detection(v)
                         conditions += f" {field} {condition_operator} {value} and"
-                    if conditions.endswith("and"):
-                        conditions = conditions[:-len("and")]
+                    conditions = self._remove_strings_from_end(conditions, "and")
                     query += f" where{conditions}"
                 query = query.format(model_name=self.model_name)
 
@@ -84,9 +83,33 @@ class Manager:
     def exclude(self):
         pass
 
-    def update(self):
-        pass
+    def update(self, id, **kwargs):
+        object = self.filter(id=id)
+        if not object:
+            raise ValidationError({"pk": "object with given pk does not exists"})
+        with connection.cursor() as cursor:
+            conditions = ""
+            for f, v in kwargs.items():
+                value = self._quotation_detection(v)
+                conditions += f" {f} = {value},"
+            conditions = self._remove_strings_from_end(conditions, ",")
+            query = f"UPDATE {self.model_name} SET" + conditions + f" WHERE ID = {id}"
+            cursor.execute(query)
+        connection.commit()
+        return self.filter(id=id)
+
 
     def delete(self):
         pass
+
+    def _remove_strings_from_end(self, base_string: str, target_string: str) -> str:
+        if base_string.endswith(target_string):
+            return base_string[:-len(target_string)]
+
+    def _quotation_detection(self, value):
+        if value is True:
+            value = 1
+        elif value is False:
+            value = 0
+        return f"'{value}'" if isinstance(value, str) else f"{value}"
 
