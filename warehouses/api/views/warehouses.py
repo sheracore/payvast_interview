@@ -30,12 +30,19 @@ class WarehouseViewSet(GenericViewSet):
         return Response(result, status=status.HTTP_200_OK)
 
     def destroy(self, request, pk=None):
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        try:
+            Warehouse(Warehouse.__name__).delete(id=pk)
+        except Exception:
+            raise ValidationError({"pk": "given pk does not exists"})
+        return Response(status=status.HTTP_200_OK)
 
     def partial_update(self, request, pk=None):
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        return self._update(request, pk=pk)
 
     def update(self, request, pk=None):
+        return self._update(request, pk=pk)
+
+    def _update(self, request, pk=None):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         result = Warehouse(Warehouse.__name__).update(id=pk, **request.data)

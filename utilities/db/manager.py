@@ -25,48 +25,44 @@ class Manager:
         # TODO: The problem was that cursor.execute(query, values) does not work
         if not kwargs:
             raise ValidationError(r"data to be insert is required")
-        try:
-            with connection.cursor() as cursor:
-                columns = list(kwargs.keys())
-                values = list(kwargs.values())
-                if len(values) > 1:
-                    cursor.execute(f"insert into {self.model_name}({', '.join(columns)}) VALUES {tuple(values)}")
-                else:
-                    v = values[0]
-                    value = f"('{v}')" if isinstance(v, str) else f"({v})"
-                    cursor.execute(f"insert into {self.model_name}({', '.join(columns)}) VALUES {value}")
-                connection.commit()
-                return self.filter(**kwargs)
-        except Exception as e:
-            raise ValidationError(e)
+        with connection.cursor() as cursor:
+            columns = list(kwargs.keys())
+            values = list(kwargs.values())
+            if len(values) > 1:
+                cursor.execute(f"insert into {self.model_name}({', '.join(columns)}) VALUES {tuple(values)}")
+            else:
+                v = values[0]
+                value = f"('{v}')" if isinstance(v, str) else f"({v})"
+                cursor.execute(f"insert into {self.model_name}({', '.join(columns)}) VALUES {value}")
+            connection.commit()
+            return self.filter(**kwargs)
+
 
     def insert_many(self):
         # TODO: should be developed if it needs
         pass
 
     def filter(self, **kwargs):
-        try:
-            with connection.cursor() as cursor:
-                query = "select * from {model_name}"
-                if kwargs:
-                    conditions = ""
-                    for f, v in kwargs.items():
-                        condition_operator = '='
-                        s_f = f.split('__')
-                        field = s_f[0]
-                        if len(s_f) > 1:
-                            condition_operator = self._filter_operators()[s_f[1]]
-                        value = self._quotation_detection(v)
-                        conditions += f" {field} {condition_operator} {value} and"
-                    conditions = self._remove_strings_from_end(conditions, "and")
-                    query += f" where{conditions}"
-                query = query.format(model_name=self.model_name)
+        with connection.cursor() as cursor:
+            query = "select * from {model_name}"
+            if kwargs:
+                conditions = ""
+                for f, v in kwargs.items():
+                    condition_operator = '='
+                    s_f = f.split('__')
+                    field = s_f[0]
+                    if len(s_f) > 1:
+                        condition_operator = self._filter_operators()[s_f[1]]
+                    value = self._quotation_detection(v)
+                    conditions += f" {field} {condition_operator} {value} and"
+                conditions = self._remove_strings_from_end(conditions, "and")
+                query += f" where{conditions}"
+            query = query.format(model_name=self.model_name)
 
-                cursor.execute(query)
-                data = cursor.fetchall()
-                return self._make_dict(self.original_columns(), data)
-        except Exception as e:
-            raise ValidationError(e)
+            cursor.execute(query)
+            data = cursor.fetchall()
+            return self._make_dict(self.original_columns(), data)
+
 
     def _filter_operators(self):
         return {
@@ -98,9 +94,16 @@ class Manager:
         connection.commit()
         return self.filter(id=id)
 
+    def delete(self, id):
+        object = self.filter(id=id)
+        if not object:
+            raise ValidationError({"pk": "object with given pk does not exists"})
+        with connection.cursor() as cursor:
+            cursor.execute(f"DELETE FROM {self.model_name} WHERE ID = {id}")
+        connection.commit()
 
-    def delete(self):
-        pass
+
+
 
     def _remove_strings_from_end(self, base_string: str, target_string: str) -> str:
         if base_string.endswith(target_string):
