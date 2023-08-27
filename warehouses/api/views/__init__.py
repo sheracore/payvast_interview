@@ -1,0 +1,1 @@
+from .warehouses import WarehouseViewSet  # noqa

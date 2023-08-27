@@ -33,9 +33,10 @@ class Manager:
                     cursor.execute(f"insert into {self.model_name}({', '.join(columns)}) VALUES {tuple(values)}")
                 else:
                     v = values[0]
-                    value = self._query_value_cotation(v)
+                    value = f"('{v}')" if isinstance(v, str) else f"({v})"
                     cursor.execute(f"insert into {self.model_name}({', '.join(columns)}) VALUES {value}")
                 connection.commit()
+                return self.filter(**kwargs)
         except Exception as e:
             raise ValidationError(e)
 
@@ -55,7 +56,7 @@ class Manager:
                         field = s_f[0]
                         if len(s_f) > 1:
                             condition_operator = self._filter_operators()[s_f[1]]
-                        value = self._query_value_cotation(v)
+                        value = f"'{v}'" if isinstance(v, str) else f"{v}"
                         conditions += f" {field} {condition_operator} {value} and"
                     if conditions.endswith("and"):
                         conditions = conditions[:-len("and")]
@@ -63,9 +64,8 @@ class Manager:
                 query = query.format(model_name=self.model_name)
 
                 cursor.execute(query)
-                original_columns = self.original_columns()
                 data = cursor.fetchall()
-                return self._make_dict(original_columns, data)
+                return self._make_dict(self.original_columns(), data)
         except Exception as e:
             raise ValidationError(e)
 
@@ -81,10 +81,12 @@ class Manager:
     def _make_dict(self, original_columns: list, data: List[tuple]):
         return [dict(zip(original_columns, row)) for row in data]
 
-    def _query_value_cotation(self, value):
-        return f"'{value}'" if isinstance(value, str) else f"{value}"
-
     def exclude(self):
-        # TODO: implement is if you need
+        pass
+
+    def update(self):
+        pass
+
+    def delete(self):
         pass
 
