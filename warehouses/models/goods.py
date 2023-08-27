@@ -5,7 +5,7 @@ class Good(Manager):
     """
     - Price is based in IRR
     - Weight is based on gr
-    - For size there are 4 category 1 : very small, 2 : small, 3 : medium, big : 4, very big : 5
+    - For size there are 4 category : 1 -> very small, 2 -> small, 3 -> medium: 4 -> big, 5 -> very big
     """
     title = "VARCHAR(50)"
     price = "INT"
